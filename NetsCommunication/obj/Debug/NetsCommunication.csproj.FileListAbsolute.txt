@@ -1,0 +1,7 @@
+C:\Users\Hp\source\repos\NetsCommunication\NetsCommunication\bin\Debug\NetsCommunication.exe.config
+C:\Users\Hp\source\repos\NetsCommunication\NetsCommunication\bin\Debug\NetsCommunication.exe
+C:\Users\Hp\source\repos\NetsCommunication\NetsCommunication\bin\Debug\NetsCommunication.pdb
+C:\Users\Hp\source\repos\NetsCommunication\NetsCommunication\obj\Debug\NetsCommunication.csproj.CoreCompileInputs.cache
+C:\Users\Hp\source\repos\NetsCommunication\NetsCommunication\obj\Debug\NetsCommunication.exe
+C:\Users\Hp\source\repos\NetsCommunication\NetsCommunication\obj\Debug\NetsCommunication.pdb
+C:\Users\Hp\source\repos\NetsCommunication\NetsCommunication\obj\Debug\NetsCommunication.csprojResolveAssemblyReference.cache
