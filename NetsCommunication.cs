@@ -82,70 +82,78 @@ namespace NetsCommunication
 
         public Tuple<bool,byte[]> ExecuteCommand(byte[] cmd)
         {
-            byte retryCount = 0;
-            bool ackStatus = false;
-            bool responseStatus = false;
-            byte[] response = new byte[] { };
-            while ((retryCount < MAX_RETRY) && ackStatus == false)
+            try
             {
-                Console.WriteLine("Akstatus retry:" + retryCount);
-                retryCount++;
-                WriteToSerialPort(cmd);
-                var ackMessage = ReadFromSerialPort(RESPONSE_ACKTIMEOUT,RESPONSE_ACKLENGTH);
-                // 2.2.2.2
-                if(ackMessage != null)
+                byte retryCount = 0;
+                bool ackStatus = false;
+                bool responseStatus = false;
+                byte[] response = new byte[] { };
+                while ((retryCount < MAX_RETRY) && ackStatus == false)
                 {
-                    // 2.2.2.1
-                    if(BitConverter.ToString(ackMessage).Replace("-", "") == ACK)
+                    Console.WriteLine("Akstatus retry:" + retryCount);
+                    retryCount++;
+                    WriteToSerialPort(cmd);
+                    var ackMessage = ReadFromSerialPort(RESPONSE_ACKTIMEOUT, RESPONSE_ACKLENGTH);
+                    // 2.2.2.2
+                    if (ackMessage != null)
                     {
-                        ackStatus = true;
-                    }
-                }               
-            }
-            if(ackStatus == false)
-            {
-                return new Tuple<bool,byte[]>(false,null); // Transaction - Ack failure
-            }
-            retryCount = 0;
-            while ((retryCount < MAX_RETRY) && responseStatus == false)
-            {
-                retryCount++;
-                Console.WriteLine("responseStatus retry:" + retryCount);
-                var responseHeader = ReadFromSerialPort(RESPONSE_DATATIMEOUT,RESPONSE_HEADERLENGTH);
-                if (responseHeader != null)
-                {
-                    var responseDataLength = Int16.Parse(BitConverter.ToString(responseHeader,1).Replace("-",""), 0);
-                    var responseData = ReadFromSerialPort(RESPONSE_DATATIMEOUT, responseDataLength + 2);
-                    response = responseHeader.Concat(responseData).ToArray();
-                    if(response != null)
-                    {
-
-                        if (ValidateResponse(response))
+                        // 2.2.2.1
+                        if (BitConverter.ToString(ackMessage).Replace("-", "") == ACK)
                         {
-                            responseStatus = true;
-                            // Send ACK
-                            // 2.2.1
-                            WriteToSerialPort(new byte[] { 0x06 });
+                            ackStatus = true;
+                        }
+                    }
+                }
+                if (ackStatus == false)
+                {
+                    return new Tuple<bool, byte[]>(false, null); // Transaction - Ack failure
+                }
+                retryCount = 0;
+                while ((retryCount < MAX_RETRY) && responseStatus == false)
+                {
+
+                    Console.WriteLine("responseStatus retry:" + retryCount);
+                    retryCount++;
+                    var responseHeader = ReadFromSerialPort(RESPONSE_DATATIMEOUT, RESPONSE_HEADERLENGTH);
+                    if (responseHeader != null)
+                    {
+                        var responseDataLength = Int16.Parse(BitConverter.ToString(responseHeader, 1).Replace("-", ""), 0);
+                        var responseData = ReadFromSerialPort(RESPONSE_DATATIMEOUT, responseDataLength + 2);
+                        response = responseHeader.Concat(responseData).ToArray();
+                        if (response != null)
+                        {
+
+                            if (ValidateResponse(response))
+                            {
+                                responseStatus = true;
+                                // Send ACK
+                                // 2.2.1
+                                WriteToSerialPort(new byte[] { 0x06 });
+                            }
+                            else
+                            {
+                                // 2.2.2.3
+                                // Send NACK
+                                WriteToSerialPort(new byte[] { 0x15 });
+                            }
                         }
                         else
                         {
-                            // 2.2.2.3
-                            // Send NACK
-                            WriteToSerialPort(new byte[] { 0x15 });
+                            // 2.2.2.5
+                            retryCount = 3;
                         }
                     }
-                    else
-                    {
-                        // 2.2.2.5
-                        retryCount = 3;
-                    }
                 }
+                if (responseStatus == false)
+                {
+                    return new Tuple<bool, byte[]>(false, response);   // No response or incorrect response
+                }
+                return new Tuple<bool, byte[]>(true, response);
             }
-            if(responseStatus == false)
+            catch(Exception ex)
             {
-                return new Tuple<bool,byte[]>(false,response);   // No response or incorrect response
+                return new Tuple<bool, byte[]>(false, null);
             }
-            return new Tuple<bool,byte[]>(true,response);
            
         }
 
